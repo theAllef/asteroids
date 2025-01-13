@@ -13,6 +13,9 @@
     const FPS = 30;
     const SHIP_SIZE = 30; // ship heith in pixels
     const FRICTION = 0.7; // friction coeficient of space(0 = no frinction, 1= lots of friction)
+    const ROIDS_NUM = 3; // starting number of asteroid
+    const ROIDS_SIZE = 100; // starting size of asteroids in pixels
+    const ROIDS_SPS = 50; //max starting speed of asteroids in pixels per second
     const SHIP_THRUST = 5; // acceleeration in pixels per second per second
     const TURN_SPEED = 360; // turn speed in degrees per second
 
@@ -33,12 +36,27 @@
         }
 
     }
+
+    //set up asteroids
+    var roids = [];
+    createAsteroidBelt();
+
+
+
     //set up event handler
     document.addEventListener("keydown", keyDown);
     document.addEventListener("keyup", keyUp);
 
     //set loop
     setInterval(update, 1000 / FPS);
+
+    function createAsteroidBelt() {
+        roids = [];
+        for (var i = 0; i < ROIDS_NUM; i++) {
+            roids.push(newAsteroid());
+        }
+
+    }
 
     function keyDown( /** @type {KeyboardEvent} */ ev) {
         switch(ev.keyCode) {
@@ -68,6 +86,18 @@
         }
     }
 
+    function newAsteroid(x, y) {
+        var roid = {
+            x: x,
+            y: y,
+            xv: Math.random() * ROIDS_SPD / FPS * (Math.random() < 0.5 ? 1 : -1),
+            yv: Math.random() * ROIDS_SPD / FPS * (Math.random() < 0.5 ? 1 : -1),
+            r: ROIDS_SIZE / 2,
+            a: Math.random() * Math.PI * 2 // in radiance
+        };
+        return roid;
+    }
+
     function update() {
         //draw space
         ctx.fillStyle = "#00132D";
@@ -79,12 +109,33 @@
             ship.thrust.y -= SHIP_THRUST * Math.sin(ship.a) / FPS;
 
                 //draw the thruster
+                ctx.fillStyle = "#006d77";
+                ctx.strokeStyle = "#006d77";
+                ctx.lineWidth = SHIP_SIZE / 15;
+                ctx.beginPath();
+                ctx.moveTo( // rear left
+                    ship.x - ship.r * (2 / 3 * Math.cos(ship.a) + 0.5 * Math.sin(ship.a)),
+                    ship.y + ship.r * (2 / 3 * Math.sin(ship.a) - 0.5 * Math.cos(ship.a)),
+                );
+                ctx.lineTo( // rear center of the ship
+                    ship.x - ship.r * 6 / 3 * Math.cos(ship.a),
+                    ship.y + ship.r * 6 / 3 * Math.sin(ship.a),
+                );
+                ctx.lineTo( // REAR RIGHT OF THE SHIP
+                    ship.x - ship.r * (2 / 3 * Math.cos(ship.a) - 0.5 * Math.sin(ship.a)),
+                    ship.y + ship.r * (2 / 3 * Math.sin(ship.a) + 0.5 * Math.cos(ship.a)),
+                );
+                ctx.closePath();
+                ctx.fill()
+                ctx.stroke();
+
         } else {
             ship.thrust.x -= FRICTION * ship.thrust.x / FPS;
             ship.thrust.y -= FRICTION * ship.thrust.y / FPS;
         }
 
         //draw triangular ship
+        ctx.fillStyle = "#CEBA00";
         ctx.strokeStyle = "#CEBA00";
         ctx.lineWidth = SHIP_SIZE / 20;
         ctx.beginPath();
@@ -123,8 +174,8 @@
         }
 
         //center dot
-        ctx.fillStyle = "green";
-        ctx.fillRect(ship.x - 1, ship.y - 1, 2, 2);
+        ctx.fillStyle = "00132D";
+         // ctx.fillRect(ship.x - 1, ship.y - 1, 2, 2);
     }
 
 </script>
